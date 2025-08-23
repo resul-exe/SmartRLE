@@ -1,7 +1,9 @@
 # 🚀 SmartRLE - Intelligent Hybrid String Compression Algorithm
 
 [![Java](https://img.shields.io/badge/Java-8%2B-orange)](https://www.oracle.com/java/)
-[![Build Status](https://img.shields.io/badge/Build-Passing-green)](https://github.com/username/SmartRLE)
+[![Build Status](https://img.shields.io/badge/Build-Passing-green)](https://github.com/resul-exe/SmartRLE)
+[![GitHub stars](https://img.shields.io/github/stars/resul-exe/SmartRLE)](https://github.com/resul-exe/SmartRLE/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/resul-exe/SmartRLE)](https://github.com/resul-exe/SmartRLE/network)
 [![Compression](https://img.shields.io/badge/Compression-47%25-success)](README.md)
 
 ## 📋 Project Overview
@@ -204,7 +206,7 @@ List<String> compressed = dataList.stream()
 ### Download & Compile
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/SmartRLE.git
+git clone https://github.com/resul-exe/SmartRLE.git
 cd SmartRLE
 
 # Compile
