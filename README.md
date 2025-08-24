@@ -8,7 +8,10 @@
 
 ## 📋 Project Overview
 
-**SmartRLE** is an innovative hybrid string compression algorithm that builds upon traditional Run-Length Encoding (RLE) techniques. By intelligently combining four different compression methods, it achieves exceptional compression ratios, particularly for data containing repetitive patterns.
+**SmartRLE** iki modda çalışabilen hibrit, kayıpsız bir metin sıkıştırma algoritmasıdır:
+
+- Genel amaçlı metinler için klasik hibrit yaklaşım (sözlük + RLE + pattern).
+- Log‑özel mod: Apache/Nginx ve uygulama logları için alan‑bazlı ön‑işleme (Apache‑aware), tersine çevrilebilir başlık (header), satır kodlama, token‑blok RLE ve ASCII‑güvenli RLE. EOL (CRLF/LF) ve trailing EOL durumu korunur.
 
 ## 🎯 Key Features
 
@@ -38,11 +41,15 @@ String decompressed = compressor.decompress(compressed);
 
 ## 🔧 Technical Architecture
 
-### 4-Stage Compression Pipeline
+### Log Modu Pipeline (üründe etkin)
 
 ```
-Input → Dictionary → Adaptive RLE → Pattern Detection → Optimization → Output
+Girdi → EOL Tespiti + Apache‑aware Ön‑İşleme (IP/TS/ID/UA/Path) → Sözlük (kelime/sabitler) →
+Token‑Blok RLE (satır tekrarları) → Kalıp (temkinli) → Satır Kodlama → ASCII‑güvenli RLE →
+Header (gerekirse GZIP) + DATA
 ```
+
+Doğrultusunda decompress sırası tam tersi uygulanır ve header’dan tüm eşlemeler okunarak orijinal metin birebir üretilir.
 
 ### Core Components
 
@@ -52,11 +59,11 @@ Input → Dictionary → Adaptive RLE → Pattern Detection → Optimization →
 "the" → "D00", "and" → "D01", "for" → "D02"
 ```
 
-#### 2. **Adaptive RLE** 
-```java
-// Encoding 3+ repeating characters
-"aaaaaaa" → "Ra♠" (R + character + count)
-"bbbbbb" → "Rb♠"
+#### 2. **Adaptive RLE (ASCII‑güvenli)** 
+```text
+// 6+ tekrarda karakter koşusu kodlanır (örnek format)
+R:<karakter>:<adet>;
+Örn: aaaaaa → R:a:6;
 ```
 
 #### 3. **Pattern Detection**
@@ -88,20 +95,20 @@ Top 5 chars → C0, C1, C2, C3, C4
 - Selects optimal compression technique
 - Multi-stage optimization pipeline
 
-## 📊 Performance Benchmarks
+## 📊 Performance – Log Modu (Apache)
 
-### Test Results
+### Gerçek Log Sonucu (apache_access_5mb.log ~ 5.24 MB)
 
-| Test Category | Original Size | Compressed | Compression Ratio | Status |
-|---------------|---------------|------------|-------------------|---------|
-| **Repetitive Characters** | 63 bytes | 30 bytes | **47.62%** | ✅ Excellent |
-| **Text Patterns** | 134 bytes | 222 bytes | 165.67% | ❌ Overhead |
-| **ABAB Patterns** | 62 bytes | 35 bytes | **56.45%** | ✅ Very Good |
-| **Mixed Content** | 117 bytes | 98 bytes | **83.76%** | ✅ Good |
+| Araç     | Boyut (bayt) | Oran | Sıkıştırma (ms) | Açma (ms) | Doğruluk |
+|----------|---------------|------|------------------|-----------|----------|
+| SmartRLE | 3,383,109     | 64.53% | 1851 | 509 | ✅ |
+| GZIP     | 741,640       | 14.15% | 151  | –   | – |
 
-**Average Performance**: 109.06%
+Notlar:
+- SmartRLE doğruluk odaklıdır; log‑özel pipeline ile EOL/CRLF ve tüm alanlar birebir korunur.
+- Token‑LZ (len,dist) katmanı şu an devre dışı; etkin ve güvenli hale geldiğinde oran hedefleri daha iyi olacaktır.
 
-### ✅ **Strengths**
+### ✅ **Strengths (Log Modu)**
 - Excellent for repetitive data (47%+ compression)
 - Fast processing time
 - Low memory footprint  
@@ -118,6 +125,15 @@ Top 5 chars → C0, C1, C2, C3, C4
 - ⚙️ **Config Files**: Repetitive settings structure
 - 🔄 **Template Data**: Standard format files
 - 📊 **IoT Data**: Sensor readings with patterns
+
+### 🚀 Hızlı Kullanım (Log Benchmarks)
+
+```bash
+javac SmartRLE.java BenchmarkRunner.java
+java BenchmarkRunner apache_access_5mb.log
+```
+
+Çıktı; orijinal/sonuç boyutları, oran, süreler ve doğruluk kontrolünü içerir.
 
 ## 🔬 Algorithm Innovation
 

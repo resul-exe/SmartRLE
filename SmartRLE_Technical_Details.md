@@ -21,7 +21,7 @@ Optimal Threshold = (Dictionary Overhead + RLE Overhead) / Pattern Savings
 
 ## 🔧 Algoritma Detayları
 
-### Stage 1: Dictionary Compression
+### Stage 1: Dictionary Compression (Log‑Özel)
 
 ```java
 private String applyDictionaryCompression(String input) {
@@ -34,8 +34,15 @@ private String applyDictionaryCompression(String input) {
         String pattern = entry.getKey();
         String code = entry.getValue();
         
-        // Case-insensitive replacement
-        result = result.replaceAll("(?i)" + Pattern.quote(pattern), code);
+        // Log modunda tam kelime ve büyük/küçük harf duyarlı; sentinel ile sarılır
+        Pattern p = Pattern.compile("\\b" + Pattern.quote(pattern) + "\\b");
+        Matcher m = p.matcher(result);
+        StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            m.appendReplacement(sb, Matcher.quoteReplacement("~" + code + "~"));
+        }
+        m.appendTail(sb);
+        result = sb.toString();
     }
     
     return result;
@@ -51,7 +58,7 @@ private String applyDictionaryCompression(String input) {
 - Fixed overhead for dictionary
 - Not optimal for unique texts
 
-### Stage 2: Adaptive RLE
+### Stage 2: Adaptive RLE (ASCII‑Güvenli)
 
 ```java
 private String applyAdaptiveRLE(String input) {
@@ -69,8 +76,8 @@ private String applyAdaptiveRLE(String input) {
             count++;
         }
 
-        if (count >= 3) { // Minimum threshold for efficiency
-            result.append("R").append(current).append((char)count);
+        if (count >= 6) { // log verisinde daha güvenli eşik
+            result.append("R:").append(escapeChar(current)).append(":").append(count).append(";");
             i += count;
         } else {
             result.append(current);
@@ -87,7 +94,7 @@ private String applyAdaptiveRLE(String input) {
 - **Maximum Count**: 255 (char sınırı)
 - **Format**: R + Karakter + Sayı
 
-### Stage 3: Pattern Compression
+### Stage 3: Pattern Compression (Pattern History + Header)
 
 ```java
 private String applyPatternCompression(String input) {
@@ -101,11 +108,9 @@ private String applyPatternCompression(String input) {
             int repeatCount = countRepeats(input, pattern, i + len);
             
             if (repeatCount >= 2) {
-                String code = String.format("P%02d", len);
-                if (!dictionary.containsKey(pattern)) {
-                    dictionary.put(pattern, code);
-                    result = result.replace(pattern, code);
-                }
+                String code = nextPatternCode(); // örn P00, P01…
+                patternHistory.put(code, pattern);
+                result = result.replace(pattern, "~" + code + "~");
             }
         }
     }
@@ -120,7 +125,14 @@ private String applyPatternCompression(String input) {
 3. Dynamic dictionary'e ekle
 4. Replace işlemi yap
 
-### Stage 4: Optimization & Fallback
+### Stage 4: Line Coding + Token‑Blok RLE (Log)
+
+Satır tekrarı ve sık görülen satırlar için:
+- `LCODE:Lxx=<line>` başlıkta tutulur.
+- Uzun koşular: `R|Lxx|count|` formatı.
+- Art arda aynı satırlar: `B<count>:<escapedLine>;`, tekil satır: `S<escapedLine>;`.
+
+Bu katmanlar, loglarda yoğun tekrar eden şablonları kompakt hale getirir.
 
 ```java
 private String optimizeCompression(String input) {
@@ -153,26 +165,14 @@ private String applyAggressiveCompression(String input) {
 }
 ```
 
-## 📊 Performance Analysis
+## 📊 Performance Analysis (Log Modu)
 
-### Benchmark Sonuçları
+### Benchmark Sonuçları – Apache Access Log (5.24 MB)
 
 #### Test Data Sets
 
-1. **Highly Repetitive Data**: `"aaaaaabbbbbbcccccc"`
-   - Original: 18 bytes
-   - Compressed: 9 bytes
-   - Ratio: **50%** ✅
-
-2. **Text with Patterns**: `"the quick brown fox jumps over the lazy dog"`
-   - Original: 43 bytes
-   - Compressed: 38 bytes
-   - Ratio: **88.37%** ✅
-
-3. **Mixed Content**: `"Hello123Hello123Hello123"`
-   - Original: 24 bytes
-   - Compressed: 15 bytes
-   - Ratio: **62.5%** ✅
+SmartRLE: 3,383,109 bayt (%64.53), sıkıştırma 1851 ms, açma 509 ms, doğruluk ✅
+GZIP: 741,640 bayt (%14.15), sıkıştırma 151 ms
 
 ### Performance Profiling
 
@@ -192,14 +192,9 @@ double executionTime = (endTime - startTime) / 1_000_000.0; // ms
 
 ## 🔍 Algoritma Karşılaştırması
 
-### vs. Standard RLE
+### vs. GZIP/DEFLATE (Durum)
 
-| Metric | Standard RLE | SmartRLE |
-|--------|-------------|----------|
-| Repetitive Data | 60% | **47%** ✅ |
-| Text Data | 110% | **88%** ✅ |
-| Random Data | 120% | **105%** ✅ |
-| Processing Time | Fast | Medium |
+Şu an SmartRLE gzip kadar iyi oran yakalayamıyor; temel sebep Token‑LZ katmanının güvenli sürümünün devre dışı olması ve global header maliyeti. Segment mini‑başlık + güvenli Token‑LZ ile hedef oranların iyileştirilmesi planlanıyor.
 
 ### vs. Dictionary-Only
 
@@ -249,9 +244,13 @@ private void adjustThreshold(int inputSize) {
 }
 ```
 
-## 🔬 Experimental Results
+## 🔬 Planlanan İyileştirmeler
 
-### Dataset Analysis
+### Segment Mimari + Güvenli Token‑LZ
+- Segment mini‑header (1–4K satır)
+- Header/payload oranı guardrail (örn. %30)
+- Token akışı üzerinde (len,dist) geri başvuru, varint kodlama
+- Path templating ve base+delta/varint ile header sıkılaştırma
 
 #### Compression Effectiveness by Data Type
 
