@@ -1,4 +1,4 @@
-# 🚀 SmartRLE - Intelligent Hybrid String Compression Algorithm
+# 🚀 SmartRLE — Log Odaklı Kayıpsız Sıkıştırma (Java)
 
 [![Java](https://img.shields.io/badge/Java-8%2B-orange)](https://www.oracle.com/java/)
 [![Build Status](https://img.shields.io/badge/Build-Passing-green)](https://github.com/resul-exe/SmartRLE)
@@ -6,22 +6,23 @@
 [![GitHub forks](https://img.shields.io/github/forks/resul-exe/SmartRLE)](https://github.com/resul-exe/SmartRLE/network)
 [![Compression](https://img.shields.io/badge/Compression-47%25-success)](README.md)
 
-## 📋 Project Overview
+## 📋 Genel Bakış
 
-**SmartRLE** iki modda çalışabilen hibrit, kayıpsız bir metin sıkıştırma algoritmasıdır:
+**SmartRLE**, metin tabanlı loglar için kayıpsız (lossless) ve deterministik bir sıkıştırma katmanıdır. Projede iki mod bulunmaktadır:
 
 - Genel amaçlı metinler için klasik hibrit yaklaşım (sözlük + RLE + pattern).
-- Log‑özel mod: Apache/Nginx ve uygulama logları için alan‑bazlı ön‑işleme (Apache‑aware), tersine çevrilebilir başlık (header), satır kodlama, token‑blok RLE ve ASCII‑güvenli RLE. EOL (CRLF/LF) ve trailing EOL durumu korunur.
+- Log‑özel mod (üründe etkin): Apache/Nginx ve uygulama logları için alan‑bazlı ön‑işleme (Apache‑aware), tersine çevrilebilir başlık (header), satır kodlama, token‑blok RLE ve ASCII‑güvenli RLE. CRLF/LF dahil satır sonları ve son satırın EOL durumu korunur.
 
-## 🎯 Key Features
+## 🎯 Temel Özellikler
 
-- **🔄 Hybrid Approach**: Combines 4 different compression techniques
-- **🧠 Adaptive Learning**: Self-optimizing algorithm that learns from data patterns  
-- **📊 Context-Aware**: Automatically selects optimal strategies based on data type
-- **⚡ High Performance**: Up to 47% compression ratio for repetitive data
-- **🔧 Easy Integration**: Simple API with comprehensive documentation
+- **Log‑bilinçli ön‑işleme**: Apache Combined Log formatı, IP/Timestamp/UUID/ID normalizasyonu
+- **Tersine çevrilebilir başlık**: DICT/PAT/LCODE/CHAR ve alan listeleri (TS/ATS/METH/STAT/…) header’da saklanır
+- **Satır kodlama + Token‑blok RLE**: Tekrarlayan satırlar ve bloklar kompakt kodlanır
+- **ASCII‑güvenli RLE**: `R:<karakter>:<adet>;` formatı; çakışma/kaçış güvenli
+- **EOL korunumu**: CRLF/LF ve trailing EOL politikası birebir korunur
+- **Gerekirse header GZIP**: Büyük başlıklar base64+gzip ile küçültülür
 
-## 🚀 Quick Start
+## 🚀 Hızlı Başlangıç (Java)
 
 ```java
 // Create compressor instance
@@ -31,7 +32,7 @@ SmartRLE compressor = new SmartRLE();
 String original = "aaaaaabbbbbbcccccc";
 String compressed = compressor.compress(original);
 
-// Get compression statistics
+// İstatistik al
 SmartRLE.CompressionStats stats = compressor.getStats(original, compressed);
 System.out.println(stats); // Original: 18 bytes, Compressed: 9 bytes, Ratio: 50.00%
 
@@ -39,46 +40,46 @@ System.out.println(stats); // Original: 18 bytes, Compressed: 9 bytes, Ratio: 50
 String decompressed = compressor.decompress(compressed);
 ```
 
-## 🔧 Technical Architecture
+## 🔧 Mimari ve Pipeline (Log Modu)
 
-### Log Modu Pipeline (üründe etkin)
+### Pipeline
 
 ```
 Girdi → EOL Tespiti + Apache‑aware Ön‑İşleme (IP/TS/ID/UA/Path) → Sözlük (kelime/sabitler) →
-Token‑Blok RLE (satır tekrarları) → Kalıp (temkinli) → Satır Kodlama → ASCII‑güvenli RLE →
+Token‑Blok RLE (satır tekrarı) → Kalıp (temkinli) → Satır Kodlama → ASCII‑güvenli RLE →
 Header (gerekirse GZIP) + DATA
 ```
 
-Doğrultusunda decompress sırası tam tersi uygulanır ve header’dan tüm eşlemeler okunarak orijinal metin birebir üretilir.
+Decompress sırası bu akışın tersidir. Tüm geri dönüşler header’daki eşlemelerden okunarak yapılır.
 
 ### Core Components
 
-#### 1. **Dictionary Compression**
+#### 1) Sözlük (Dictionary)
 ```java
 // Common words replacement with short codes
 "the" → "D00", "and" → "D01", "for" → "D02"
 ```
 
-#### 2. **Adaptive RLE (ASCII‑güvenli)** 
+#### 2) ASCII‑Güvenli RLE 
 ```text
 // 6+ tekrarda karakter koşusu kodlanır (örnek format)
 R:<karakter>:<adet>;
 Örn: aaaaaa → R:a:6;
 ```
 
-#### 3. **Pattern Detection**
+#### 3) Kalıp (Pattern)
 ```java
 // Detecting and encoding repeating patterns
 "abcabc" → "P03" + reference
 ```
 
-#### 4. **Frequency Analysis**
+#### 4) Sıklık / Kısa Kodlar (opsiyonel)
 ```java
 // Most frequent characters → short codes
 Top 5 chars → C0, C1, C2, C3, C4
 ```
 
-## 🧠 Intelligent Features
+## 🧠 Akıllı Davranışlar
 
 ### 🎯 **Self-Learning Capability**
 - Learns data patterns during execution
@@ -95,7 +96,7 @@ Top 5 chars → C0, C1, C2, C3, C4
 - Selects optimal compression technique
 - Multi-stage optimization pipeline
 
-## 📊 Performance – Log Modu (Apache)
+## 📊 Performans – Log Modu (Apache)
 
 ### Gerçek Log Sonucu (apache_access_5mb.log ~ 5.24 MB)
 
@@ -106,27 +107,27 @@ Top 5 chars → C0, C1, C2, C3, C4
 
 Notlar:
 - SmartRLE doğruluk odaklıdır; log‑özel pipeline ile EOL/CRLF ve tüm alanlar birebir korunur.
-- Token‑LZ (len,dist) katmanı şu an devre dışı; etkin ve güvenli hale geldiğinde oran hedefleri daha iyi olacaktır.
+- Token‑LZ (len,dist) katmanı şu an DEVRE DIŞI; güvenli sürüm etkinleştirildiğinde oranların iyileştirilmesi planlanmaktadır.
 
-### ✅ **Strengths (Log Modu)**
+### ✅ Güçlü Yanlar (Log Modu)
 - Excellent for repetitive data (47%+ compression)
 - Fast processing time
 - Low memory footprint  
 - Adaptive learning capability
 - Simple API integration
 
-### 🔧 **Optimization Areas**
+### 🔧 İyileştirme Alanları
 - Overhead for random data
 - Dictionary initialization cost
 - Suboptimal for very small files
 
-### 🎯 **Optimal Use Cases**
+### 🎯 Uygun Kullanım Senaryoları
 - 📄 **Log Files**: Timestamp and message patterns
 - ⚙️ **Config Files**: Repetitive settings structure
 - 🔄 **Template Data**: Standard format files
 - 📊 **IoT Data**: Sensor readings with patterns
 
-### 🚀 Hızlı Kullanım (Log Benchmarks)
+### 🚀 Benchmark Çalıştırma
 
 ```bash
 javac SmartRLE.java BenchmarkRunner.java
@@ -135,7 +136,36 @@ java BenchmarkRunner apache_access_5mb.log
 
 Çıktı; orijinal/sonuç boyutları, oran, süreler ve doğruluk kontrolünü içerir.
 
-## 🔬 Algorithm Innovation
+### 🔒 Header Formatı (Özet)
+
+```
+[SMARTRLE_HEADER] veya [SMARTRLE_HEADERGZ]\n
+VERSION:SmartRLEv1-log
+EOL:LF|CRLF
+TRAIL:0|1
+ATSBASE:<epochSec> (opsiyonel)  ATSOFFSET:+0300  ATSDELTA:1,1,2,...
+TS:<ts1,ts2,...>  ATS:[ham timestamp listesi — base+delta yoksa]
+METH:/ STAT:/ PATH:/ REF:/ UA:/ IP:/ UUID:/ ID:/
+DICT:D00=the ...
+PAT:P00=<pattern> ...
+LCODE:L00=<line> ...
+CHAR:C0=<char> ...
+```
+
+Header büyükse otomatik GZIP+Base64 ile yazılır:
+```
+[SMARTRLE_HEADERGZ]\n
+B64:<base64-gzip-header>\n
+```
+
+## 🔬 Karşılaştırma ve Yol Haritası
+
+- Şu an SmartRLE, log‑özel modda doğruluk odaklıdır; oran olarak GZIP’in gerisindedir.
+- Planlanan iyileştirmeler:
+  - Segment mini‑başlık (1–4K satır) ve header/payload guardrail
+  - Güvenli Token‑LZ (token akışı üzerinde len,dist; varint kodlama)
+  - Path templating ve varint tabanlı daha kompakt header
+  - İsteğe bağlı hafif entropi (küçük segment tabloları)
 
 ### vs. Traditional Algorithms
 
@@ -181,7 +211,7 @@ public class SmartRLE {
 
 Comprehensive test suite validating algorithm performance across different data types and edge cases.
 
-## 📖 **API Documentation**
+## 📖 API
 
 ### Basic Usage
 
@@ -213,7 +243,7 @@ List<String> compressed = dataList.stream()
     .collect(Collectors.toList());
 ```
 
-## 🔧 **Installation & Setup**
+## 🔧 Kurulum
 
 ### Prerequisites
 - Java 8 or higher
@@ -236,8 +266,8 @@ java SmartRLETest
 java SmartRLE
 ```
 
-### Integration
-Simply include `SmartRLE.java` in your project - no additional setup required!
+### Entegrasyon
+`SmartRLE.java` dosyasını projenize eklemeniz yeterlidir; ek bağımlılık yoktur.
 
 ## 🤝 **Contributing**
 
