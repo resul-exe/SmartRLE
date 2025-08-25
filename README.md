@@ -4,7 +4,7 @@
 [![Build Status](https://img.shields.io/badge/Build-Passing-green)](https://github.com/resul-exe/SmartRLE)
 [![GitHub stars](https://img.shields.io/github/stars/resul-exe/SmartRLE)](https://github.com/resul-exe/SmartRLE/stargazers)
 [![GitHub forks](https://img.shields.io/github/forks/resul-exe/SmartRLE)](https://github.com/resul-exe/SmartRLE/network)
-[![Compression](https://img.shields.io/badge/Compression-47%25-success)](README.md)
+[![Compression](https://img.shields.io/badge/Compression-64.53%25-warning)](README.md)
 
 ## 📋 Genel Bakış
 
