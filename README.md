@@ -25,18 +25,18 @@
 ## 🚀 Hızlı Başlangıç (Java)
 
 ```java
-// Create compressor instance
+// Sıkıştırıcı örneği oluştur
 SmartRLE compressor = new SmartRLE();
 
-// Compress your data
+// Veriyi sıkıştır
 String original = "aaaaaabbbbbbcccccc";
 String compressed = compressor.compress(original);
 
 // İstatistik al
 SmartRLE.CompressionStats stats = compressor.getStats(original, compressed);
-System.out.println(stats); // Original: 18 bytes, Compressed: 9 bytes, Ratio: 50.00%
+System.out.println(stats); // Orijinal: 18 bayt, Sıkıştırılmış: 9 bayt, Oran: %50.00
 
-// Decompress when needed
+// Gerektiğinde açma işlemi
 String decompressed = compressor.decompress(compressed);
 ```
 
@@ -52,11 +52,11 @@ Header (gerekirse GZIP) + DATA
 
 Decompress sırası bu akışın tersidir. Tüm geri dönüşler header’daki eşlemelerden okunarak yapılır.
 
-### Core Components
+### Ana Bileşenler
 
 #### 1) Sözlük (Dictionary)
 ```java
-// Common words replacement with short codes
+// Yaygın kelimelerin kısa kodlarla değiştirilmesi
 "the" → "D00", "and" → "D01", "for" → "D02"
 ```
 
@@ -69,32 +69,32 @@ R:<karakter>:<adet>;
 
 #### 3) Kalıp (Pattern)
 ```java
-// Detecting and encoding repeating patterns
-"abcabc" → "P03" + reference
+// Tekrarlayan kalıpların tespiti ve kodlanması
+"abcabc" → "P03" + referans
 ```
 
 #### 4) Sıklık / Kısa Kodlar (opsiyonel)
 ```java
-// Most frequent characters → short codes
-Top 5 chars → C0, C1, C2, C3, C4
+// En sık kullanılan karakterler → kısa kodlar
+İlk 5 karakter → C0, C1, C2, C3, C4
 ```
 
 ## 🧠 Akıllı Davranışlar
 
-### 🎯 **Self-Learning Capability**
-- Learns data patterns during execution
-- Dynamically updates dictionary entries
-- Improves pattern recognition over time
+### 🎯 **Öz-Öğrenme Yeteneği**
+- Çalışma sırasında veri kalıplarını öğrenir
+- Sözlük girişlerini dinamik olarak günceller
+- Zaman içinde kalıp tanımayı geliştirir
 
-### ⚡ **Adaptive Performance**
-- Adjusts strategy based on data size
-- Lightweight approach for small data
-- Aggressive compression for large datasets
+### ⚡ **Uyarlanabilir Performans**
+- Veri boyutuna göre strateji ayarlar
+- Küçük veriler için hafif yaklaşım
+- Büyük veri kümeleri için agresif sıkıştırma
 
-### 🔍 **Context Awareness**
-- Analyzes data type automatically
-- Selects optimal compression technique
-- Multi-stage optimization pipeline
+### 🔍 **Bağlam Farkındalığı**
+- Veri tipini otomatik analiz eder
+- Optimal sıkıştırma tekniğini seçer
+- Çok aşamalı optimizasyon hattı
 
 ## 📊 Performans – Log Modu (Apache)
 
@@ -110,22 +110,22 @@ Notlar:
 - Token‑LZ (len,dist) katmanı şu an DEVRE DIŞI; güvenli sürüm etkinleştirildiğinde oranların iyileştirilmesi planlanmaktadır.
 
 ### ✅ Güçlü Yanlar (Log Modu)
-- Excellent for repetitive data (47%+ compression)
-- Fast processing time
-- Low memory footprint  
-- Adaptive learning capability
-- Simple API integration
+- Tekrarlayan veriler için mükemmel (%47+ sıkıştırma)
+- Hızlı işlem süresi
+- Düşük bellek ayak izi
+- Uyarlanabilir öğrenme yeteneği
+- Basit API entegrasyonu
 
 ### 🔧 İyileştirme Alanları
-- Overhead for random data
-- Dictionary initialization cost
-- Suboptimal for very small files
+- Rastgele veriler için ek yük
+- Sözlük başlatma maliyeti
+- Çok küçük dosyalar için optimal değil
 
 ### 🎯 Uygun Kullanım Senaryoları
-- 📄 **Log Files**: Timestamp and message patterns
-- ⚙️ **Config Files**: Repetitive settings structure
-- 🔄 **Template Data**: Standard format files
-- 📊 **IoT Data**: Sensor readings with patterns
+- 📄 **Log Dosyaları**: Zaman damgası ve mesaj kalıpları
+- ⚙️ **Yapılandırma Dosyaları**: Tekrarlayan ayar yapısı
+- 🔄 **Şablon Verileri**: Standart format dosyalar
+- 📊 **IoT Verileri**: Kalıplı sensör okumaları
 
 ### 🚀 Benchmark Çalıştırma
 
@@ -167,77 +167,77 @@ B64:<base64-gzip-header>\n
   - Path templating ve varint tabanlı daha kompakt header
   - İsteğe bağlı hafif entropi (küçük segment tabloları)
 
-### vs. Traditional Algorithms
+### Geleneksel Algoritmalarla Karşılaştırma
 
-**Traditional RLE:**
+**Geleneksel RLE:**
 ```java
 "aaabbb" → "3a3b"
 ```
 
 **SmartRLE:**
 ```java
-"aaabbb" → Dictionary → RLE → Pattern → Optimize → Result
+"aaabbb" → Sözlük → RLE → Kalıp → Optimize → Sonuç
 ```
 
-### 🆕 **Innovation Points**
+### 🆕 **Yenilik Noktaları**
 
-1. **🔄 Multi-Stage Hybrid**: Sequential application of 4 different techniques
-2. **🧠 Dynamic Learning**: Self-improvement during execution
-3. **📊 Context-Aware**: Strategy adaptation based on data type
-4. **⚡ Adaptive Threshold**: Size-based optimization
-5. **🔧 Cascade Optimization**: Each stage optimizes the previous one
+1. **🔄 Çok Aşamalı Hibrit**: 4 farklı tekniğin sıralı uygulanması
+2. **🧠 Dinamik Öğrenme**: Çalışma sırasında öz-geliştirme
+3. **📊 Bağlam Farkındalığı**: Veri tipine göre strateji uyarlaması
+4. **⚡ Uyarlanabilir Eşik**: Boyut tabanlı optimizasyon
+5. **🔧 Kademeli Optimizasyon**: Her aşama öncekini optimize eder
 
-## 💻 Implementation
+## 💻 Uygulama
 
-### Core Class Structure
+### Ana Sınıf Yapısı
 
 ```java
 public class SmartRLE {
-    // Intelligence components
+    // Zeka bileşenleri
     private Map<String, String> dictionary;
     private Map<Character, Integer> frequencyMap;
     private List<String> commonPatterns;
     private int compressionLevel;
     private double threshold;
     
-    // Main API
+    // Ana API
     public String compress(String input);
     public String decompress(String compressed);
     public CompressionStats getStats(String original, String compressed);
 }
 ```
 
-### Test Suite: `SmartRLETest.java`
+### Test Paketi: `BenchmarkRunner.java`
 
-Comprehensive test suite validating algorithm performance across different data types and edge cases.
+Farklı veri türleri ve uç durumlar için algoritma performansını doğrulayan kapsamlı test paketi.
 
 ## 📖 API
 
-### Basic Usage
+### Temel Kullanım
 
 ```java
 SmartRLE compressor = new SmartRLE();
 
-// Compress data
+// Veriyi sıkıştır
 String original = "aaaaaabbbbbbcccccc";
 String compressed = compressor.compress(original);
 
-// Get statistics
+// İstatistikleri al
 CompressionStats stats = compressor.getStats(original, compressed);
-System.out.println(stats); // Detailed compression metrics
+System.out.println(stats); // Detaylı sıkıştırma metrikleri
 
-// Decompress
+// Açma işlemi
 String decompressed = compressor.decompress(compressed);
 ```
 
-### Advanced Usage
+### Gelişmiş Kullanım
 
 ```java
-// Custom configuration
+// Özel yapılandırma
 SmartRLE compressor = new SmartRLE();
 
-// Batch processing
-List<String> dataList = Arrays.asList("data1", "data2", "data3");
+// Toplu işleme
+List<String> dataList = Arrays.asList("veri1", "veri2", "veri3");
 List<String> compressed = dataList.stream()
     .map(compressor::compress)
     .collect(Collectors.toList());
@@ -245,95 +245,95 @@ List<String> compressed = dataList.stream()
 
 ## 🔧 Kurulum
 
-### Prerequisites
-- Java 8 or higher
-- No external dependencies required
+### Gereksinimler
+- Java 8 veya üzeri
+- Harici bağımlılık gerektirmez
 
-### Download & Compile
+### İndirme ve Derleme
 ```bash
-# Clone the repository
+# Depoyu klonla
 git clone https://github.com/resul-exe/SmartRLE.git
 cd SmartRLE
 
-# Compile
+# Derle
 javac SmartRLE.java
 
-# Run tests
-javac SmartRLETest.java
-java SmartRLETest
+# Testleri çalıştır
+javac BenchmarkRunner.java
+java BenchmarkRunner apache_access_5mb.log
 
-# Run basic demo
+# Temel demo çalıştır
 java SmartRLE
 ```
 
 ### Entegrasyon
 `SmartRLE.java` dosyasını projenize eklemeniz yeterlidir; ek bağımlılık yoktur.
 
-## 🤝 **Contributing**
+## 🤝 **Katkıda Bulunma**
 
-We welcome contributions! Here's how you can help:
+Katkılarınızı memnuniyetle karşılıyoruz! Nasıl yardım edebileceğiniz:
 
-### How to Contribute
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Katkı Süreci
+1. Depoyu fork edin
+2. Özellik dalı oluşturun (`git checkout -b feature/harika-ozellik`)
+3. Değişikliklerinizi commit edin (`git commit -m 'Harika özellik ekle'`)
+4. Dalınıza push edin (`git push origin feature/harika-ozellik`)
+5. Pull Request açın
 
-### Development Areas
-- [ ] Dictionary size optimization
-- [ ] Pattern detection improvements
-- [ ] Memory usage optimization
-- [ ] Binary data support
-- [ ] Multi-threading support
-- [ ] Machine Learning integration
+### Geliştirme Alanları
+- [ ] Sözlük boyutu optimizasyonu
+- [ ] Kalıp tespit iyileştirmeleri
+- [ ] Bellek kullanımı optimizasyonu
+- [ ] İkili veri desteği
+- [ ] Çoklu iş parçacığı desteği
+- [ ] Makine Öğrenmesi entegrasyonu
 
-## 📈 **Future Roadmap**
+## 📈 **Gelecek Yol Haritası**
 
-### v1.1 (Next Release)
-- Enhanced pattern detection algorithm
-- Performance optimizations for large datasets
-- Additional compression strategies
+### v1.1 (Sonraki Sürüm)
+- Gelişmiş kalıp tespit algoritması
+- Büyük veri kümeleri için performans optimizasyonları
+- Ek sıkıştırma stratejileri
 
-### v2.0 (Future)
-- Machine Learning-powered pattern prediction
-- Multi-threading support for parallel processing
-- Cloud-based compression service
+### v2.0 (Gelecek)
+- Makine Öğrenmesi destekli kalıp tahmini
+- Paralel işleme için çoklu iş parçacığı desteği
+- Bulut tabanlı sıkıştırma servisi
 
-## 🔬 **Academic Value**
+## 🔬 **Akademik Değer**
 
-This project demonstrates several computer science concepts and research contributions:
+Bu proje birkaç bilgisayar bilimi kavramını ve araştırma katkısını sergiler:
 
-### Research Contributions
-- **Novel Hybrid Approach**: Unique combination of 4 compression techniques
-- **Adaptive Learning**: Self-tuning algorithm architecture
-- **Context-Aware Processing**: Data-type specific optimization strategies
-- **Performance Analysis**: Comprehensive benchmarking methodology
+### Araştırma Katkıları
+- **Yeni Hibrit Yaklaşım**: 4 sıkıştırma tekniğinin benzersiz kombinasyonu
+- **Uyarlanabilir Öğrenme**: Öz-ayarlama algoritma mimarisi
+- **Bağlam Farkındalığı**: Veri tipi özel optimizasyon stratejileri
+- **Performans Analizi**: Kapsamlı kıyaslama metodolojisi
 
-### Educational Value
-- Algorithm design and optimization
-- Multi-stage pipeline architecture
-- Performance analysis and benchmarking
-- Test-driven development practices
+### Eğitim Değeri
+- Algoritma tasarımı ve optimizasyonu
+- Çok aşamalı boru hattı mimarisi
+- Performans analizi ve kıyaslama
+- Test odaklı geliştirme uygulamaları
 
-## 📄 **License**
+## 📄 **Lisans**
 
-This project is provided as-is for educational and research purposes.
+Bu proje eğitim ve araştırma amaçları için olduğu gibi sağlanmaktadır.
 
-## 🙏 **Acknowledgments**
+## 🙏 **Teşekkürler**
 
-- Inspired by traditional RLE algorithms
-- Built with modern software engineering practices
-- Designed for educational and research purposes
+- Geleneksel RLE algoritmalarından ilham alınmıştır
+- Modern yazılım mühendisliği uygulamalarıyla oluşturulmuştur
+- Eğitim ve araştırma amaçları için tasarlanmıştır
 
-## 📞 **Contact & Support**
+## 📞 **İletişim ve Destek**
 
-- **Issues**: Please use GitHub Issues for bug reports and feature requests
-- **Discussions**: Use GitHub Discussions for questions and ideas
-- **Email**: Contact through GitHub profile
+- **Sorunlar**: Hata raporları ve özellik istekleri için GitHub Issues kullanın
+- **Tartışmalar**: Sorular ve fikirler için GitHub Discussions kullanın
+- **E-posta**: GitHub profili üzerinden iletişim kurun
 
 ---
 
-**⭐ If you find this project useful, please consider giving it a star!**
+**⭐ Bu projeyi faydalı buluyorsanız, lütfen yıldız vermeyi düşünün!**
 
-**SmartRLE**: Next-generation string compression for pattern-rich data ✨
+**SmartRLE**: Kalıp açısından zengin veriler için yeni nesil string sıkıştırma ✨

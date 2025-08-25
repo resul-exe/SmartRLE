@@ -1,23 +1,36 @@
 # SmartRLE - Teknik Detaylar ve Algoritma Analizi
 
+## 📊 Güncel Performans Sonuçları (Güncellenmiş)
+
+### Apache Access Log Testi (apache_access_5mb.log)
+- **Orijinal boyut**: 5,242,918 bayt (~5.24 MB)
+- **SmartRLE sonuç**: 3,383,109 bayt (**%64.53 oran**)
+- **GZIP sonuç**: 741,640 bayt (**%14.15 oran**)
+- **SmartRLE sıkıştırma süresi**: 1,527.21 ms
+- **SmartRLE açma süresi**: 534.07 ms  
+- **GZIP sıkıştırma süresi**: 127.30 ms
+- **Doğruluk**: ✅ %100 (kayıpsız)
+
+**Mevcut Durum**: SmartRLE log-özel modda doğruluk odaklıdır; GZIP'ten ~4.5x daha büyük çıktı verir ama %100 kayıpsız ve log-aware özellikleri sunar.
+
 ## 🧮 Matematiksel Model
 
 ### Sıkıştırma Oranı Formülü
 
 ```
-Compression Ratio = (Compressed Size / Original Size) × 100
+Sıkıştırma Oranı = (Sıkıştırılmış Boyut / Orijinal Boyut) × 100
 
-Optimal Threshold = (Dictionary Overhead + RLE Overhead) / Pattern Savings
+Optimal Eşik = (Sözlük Ek Yükü + RLE Ek Yükü) / Pattern Tasarrufu
 ```
 
 ### Kompleksite Analizi
 
-| Operation | Time Complexity | Space Complexity |
-|-----------|-----------------|------------------|
-| Dictionary Lookup | O(1) | O(k) where k = dict size |
-| RLE Encoding | O(n) | O(1) |
-| Pattern Detection | O(n²) | O(p) where p = patterns |
-| Overall Algorithm | O(n²) | O(k + p) |
+| İşlem | Zaman Karmaşıklığı | Alan Karmaşıklığı |
+|-------|---------------------|-------------------|
+| Sözlük Arama | O(1) | O(k) burada k = sözlük boyutu |
+| RLE Kodlama | O(n) | O(1) |
+| Pattern Tespiti | O(n²) | O(p) burada p = pattern sayısı |
+| Genel Algoritma | O(n²) | O(k + p) |
 
 ## 🔧 Algoritma Detayları
 
@@ -119,18 +132,19 @@ private String applyPatternCompression(String input) {
 }
 ```
 
-**Algoritma Logigi:**
-1. 3-10 karakter uzunluğunda pattern'ları tara
-2. En az 2 kez tekrar edenleri bul
-3. Dynamic dictionary'e ekle
-4. Replace işlemi yap
+**Algoritma Mantığı:**
+1. 5-10 karakter uzunluğunda pattern'ları tara
+2. En az 5 kez tekrar edenleri bul (temkinli eşik)
+3. Dinamik sözlüğe ekle (maksimum 30 pattern)
+4. Sentinel ile sarılı replace işlemi yap
 
-### Stage 4: Line Coding + Token‑Blok RLE (Log)
+### Aşama 4: Satır Kodlama + Token‑Blok RLE (Log)
 
 Satır tekrarı ve sık görülen satırlar için:
-- `LCODE:Lxx=<line>` başlıkta tutulur.
+- `LCODE:Lxx=<line>` başlıkta tutulur (frekans >= 2).
 - Uzun koşular: `R|Lxx|count|` formatı.
 - Art arda aynı satırlar: `B<count>:<escapedLine>;`, tekil satır: `S<escapedLine>;`.
+- Token-LZ katmanı şu an DEVRE DIŞI (güvenlik için).
 
 Bu katmanlar, loglarda yoğun tekrar eden şablonları kompakt hale getirir.
 
@@ -171,8 +185,8 @@ private String applyAggressiveCompression(String input) {
 
 #### Test Data Sets
 
-SmartRLE: 3,383,109 bayt (%64.53), sıkıştırma 1851 ms, açma 509 ms, doğruluk ✅
-GZIP: 741,640 bayt (%14.15), sıkıştırma 151 ms
+**SmartRLE**: 3,383,109 bayt (%64.53), sıkıştırma 1527.21 ms, açma 534.07 ms, doğruluk ✅
+**GZIP**: 741,640 bayt (%14.15), sıkıştırma 127.30 ms
 
 ### Performance Profiling
 
