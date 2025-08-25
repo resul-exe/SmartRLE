@@ -102,24 +102,26 @@ R:<karakter>:<adet>;
 
 | Araç     | Boyut (bayt) | Oran | Sıkıştırma (ms) | Açma (ms) | Doğruluk |
 |----------|---------------|------|------------------|-----------|----------|
-| SmartRLE | 3,383,109     | 64.53% | 1851 | 509 | ✅ |
-| GZIP     | 741,640       | 14.15% | 151  | –   | – |
+| SmartRLE | 3,383,109     | 64.53% | 1527.21 | 534.07 | ✅ |
+| GZIP     | 741,640       | 14.15% | 127.30  | –   | – |
 
 Notlar:
 - SmartRLE doğruluk odaklıdır; log‑özel pipeline ile EOL/CRLF ve tüm alanlar birebir korunur.
 - Token‑LZ (len,dist) katmanı şu an DEVRE DIŞI; güvenli sürüm etkinleştirildiğinde oranların iyileştirilmesi planlanmaktadır.
 
 ### ✅ Güçlü Yanlar (Log Modu)
-- Tekrarlayan veriler için mükemmel (%47+ sıkıştırma)
-- Hızlı işlem süresi
-- Düşük bellek ayak izi
-- Uyarlanabilir öğrenme yeteneği
-- Basit API entegrasyonu
+- **%100 Kayıpsız**: decompress(compress(x)) ≡ x garantisi
+- **Log-aware**: Apache/Nginx formatını anlayan akıllı normalizasyon
+- **EOL Korunumu**: CRLF/LF ve trailing EOL birebir korunur
+- **Reversible Header**: Tüm eşlemeler header'da, geri dönüş garantili
+- **ASCII-güvenli RLE**: Görünmez karakter sorunu çözüldü
+- **Basit API**: Tek sınıf, ek bağımlılık yok
 
 ### 🔧 İyileştirme Alanları
-- Rastgele veriler için ek yük
-- Sözlük başlatma maliyeti
-- Çok küçük dosyalar için optimal değil
+- **Sıkıştırma oranı**: GZIP'ten ~4.5x daha büyük çıktı (mevcut)
+- **Header şişmesi**: Yüksek çeşitlilikli loglar için büyük metadata
+- **Token-LZ devre dışı**: Ana optimizasyon katmanı güvenlik için kapalı
+- **Segment eksikliği**: Global header yerine mini-header yaklaşımı gerekli
 
 ### 🎯 Uygun Kullanım Senaryoları
 - 📄 **Log Dosyaları**: Zaman damgası ve mesaj kalıpları
@@ -135,6 +137,17 @@ java BenchmarkRunner apache_access_5mb.log
 ```
 
 Çıktı; orijinal/sonuç boyutları, oran, süreler ve doğruluk kontrolünü içerir.
+
+**Son Test Sonucu** (apache_access_5mb.log):
+```
+Original size (bytes): 5242918
+SmartRLE size (bytes): 3383109 (ratio: 64,53%)
+GZIP size (bytes): 741640 (ratio: 14,15%)
+SmartRLE compress ms: 1527,21
+SmartRLE decompress ms: 534,07
+GZIP compress ms: 127,30
+Correctness (SmartRLE): true
+```
 
 ### 🔒 Header Formatı (Özet)
 
@@ -160,12 +173,18 @@ B64:<base64-gzip-header>\n
 
 ## 🔬 Karşılaştırma ve Yol Haritası
 
-- Şu an SmartRLE, log‑özel modda doğruluk odaklıdır; oran olarak GZIP’in gerisindedir.
-- Planlanan iyileştirmeler:
-  - Segment mini‑başlık (1–4K satır) ve header/payload guardrail
-  - Güvenli Token‑LZ (token akışı üzerinde len,dist; varint kodlama)
-  - Path templating ve varint tabanlı daha kompakt header
-  - İsteğe bağlı hafif entropi (küçük segment tabloları)
+### Mevcut Durum (v1.0-log)
+- **Odak**: %100 kayıpsızlık ve log-aware özellikler
+- **Oran**: %64.53 (GZIP: %14.15) — ~4.5x daha büyük
+- **Hız**: 1527ms sıkıştırma, 534ms açma (5MB Apache log)
+- **Doğruluk**: ✅ Tam veri bütünlüğü garantisi
+
+### Planlanan İyileştirmeler (v1.1+)
+- **Segment mini‑header** (1–4K satır): Global header maliyetini azalt
+- **Güvenli Token‑LZ**: len,dist geri başvuru + varint kodlama
+- **Header sıkılaştırma**: Path templating, base+delta encoding
+- **Guardrail sistemi**: Header/payload oranı kontrolü (%30 hedef)
+- **Hedef oran**: %20-30 bandında GZIP ile rekabet
 
 ### Geleneksel Algoritmalarla Karşılaştırma
 
